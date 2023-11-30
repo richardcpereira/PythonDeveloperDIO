@@ -18,10 +18,33 @@ class Formulario_Pessoa_Fisica:
 
 
     def formulario_widgets(self):
-        self.nome_entry = ctk.CTkEntry(master=self.formulario_pf)
+        self.nome_painel = ctk.CTkFrame(master=self.formulario_pf, width=60, height=28, fg_color='#708090')
+        self.nome_texto = ctk.CTkLabel(master=self.formulario_pf, text='Nome', font=('Impact', 14), bg_color='#708090',
+                                       text_color='white')
+        self.cpf_painel = ctk.CTkFrame(master=self.formulario_pf, width=60, height=28, fg_color='#708090')
+        self.cpf_texto = ctk.CTkLabel(master=self.formulario_pf, text='Cpf', font=('Impact', 14), bg_color='#708090',
+                                       text_color='white')
+
+
+
+
+
+        self.nome_painel.place(x=82, y=160)
+        self.nome_texto.place(x=92, y=160)
+        self.cpf_painel.place(x=82, y=230)
+        self.cpf_texto.place(x=92, y=230)
+
+
+
+        self.nome_entry = ctk.CTkEntry(master=self.formulario_pf, width=400)
         self.cpf = ctk.CTkEntry(master=self.formulario_pf)
         self.data_nascimentos = ctk.CTkEntry(master=self.formulario_pf)
-        self.endereço = ctk.CTkEntry(master=self.formulario_pf)
+        self.endereco = ctk.CTkEntry(master=self.formulario_pf, width=400)
+
+        self.nome_entry.place(x=150, y=160)
+        self.cpf.place(x=150, y=230)
+        self.data_nascimentos.place(x=410, y=230)
+        self.endereco.place(x=150, y=330)
 
 
 
@@ -41,16 +64,17 @@ class Cadastro_de_Conta:
         self.janela_cadastro.focus_force()
         self.janela_cadastro.mainloop()
 
-    def selecionar_classe_pessoa(self, escolha):
-        self.escolha = escolha
+    # def selecionar_classe_pessoa(self, escolha):
+    #     self.escolha = escolha
 
 
     def realizar_cadastro(self):
-        if self.escolha == 'Pessoa Física':
+        if self.drop_menu.get() == 'Pessoa Física':
             Formulario_Pessoa_Fisica()
 
         
     def widgets_de_cadastro(self):
+        self.escolha = ''
         self.moedas_imagem = tk.PhotoImage(master=self.janela_cadastro, data=moedas)
         self.moedas_painel = tk.Canvas(master=self.janela_cadastro, width=720, height=720)
         self.moedas_painel.create_image((self.moedas_imagem.width() / 2, self.moedas_imagem.height() / 2),
@@ -61,9 +85,10 @@ class Cadastro_de_Conta:
         self.painel_dp_menu = ctk.CTkFrame(master=self.janela_cadastro, width=400, height=400, fg_color='#708090')
         self.drop_menu = ctk.CTkOptionMenu(master=self.janela_cadastro,
                                            bg_color='#708090', 
-                                           values=['Pessoa Física','Pessoa Jurídica'], command=self.selecionar_classe_pessoa)
+                                           values=['Pessoa Física', 'Pessoa Jurídica'])
         
-        self.botao_cadastrar_escolha = ctk.CTkButton(master=self.janela_cadastro, text='Cadastrar', bg_color='#708090', command=self.realizar_cadastro)
+        self.botao_cadastrar_escolha = ctk.CTkButton(master=self.janela_cadastro, text='Cadastrar', bg_color='#708090',
+                                                     command=self.realizar_cadastro)
 
         
         
@@ -115,4 +140,5 @@ class Janela_Principal(Cadastro_de_Conta, Formulario_Pessoa_Fisica):
 
 
 janela1 = Janela_Principal()
+
 
