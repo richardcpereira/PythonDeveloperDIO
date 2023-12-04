@@ -1,4 +1,4 @@
-rom abc import ABC, abstractmethod
+from abc import ABC, abstractmethod
 import datetime
 
 class Transacao(ABC):
@@ -11,40 +11,40 @@ class Transacao(ABC):
         pass
  
  
-class Pessoa_Física:
+class Pessoa_Fisica:
     def __init__(self, nome: str, cpf: int, dt_nascimento: str):
-        self.nome = nome
-        self.cpf = cpf
-        self.data_nascimento = dt_nascimento
+        self.__nome = nome
+        self.__cpf = cpf
+        self.__data_nascimento = dt_nascimento
  
  
 class Pessoa_Juridica:
     def __init__(self, nome: str, cnpj: int, dt_nascimento: str ):
-        self.nome = nome
-        self.cnpj = cnpj
-        self.data_nascimento = dt_nascimento
+        self.__nome = nome
+        self.__cnpj = cnpj
+        self.__data_nascimento = dt_nascimento
  
 # =-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-=
  
 class Cliente:
     def __init__(self, endereco: str):
-        self.endereco = endereco
-        self.contas = list()
-        self.classificacao = '' # vai receber as classes pessoa fisica ou juridica
+        self.__endereco = endereco
+        self.__contas = list()
+        self.__classificacao = '' # vai receber as classes pessoa fisica ou juridica
     
     @property
     def classificacao(self):
-        return self.classificacao
+        return self.__classificacao
     
     @classificacao.setter
     def classificacao(self, dados):
-        self.classificacao = dados
+        self.__classificacao = dados
     
     def adicionar_conta(self, conta):
-        self.contas.append(conta)
+        self.__contas.append(conta)
  
     def realizar_transacao(self, numero, senha, transacao):
-        for conta in self.contas:
+        for conta in self.__contas:
             if conta.__numero == numero and conta.__senha == senha:
                 match transacao:
                     case 'saque':
@@ -57,12 +57,12 @@ class Cliente:
 # =-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-=
  
 class Conta:
-    def __init__(self, cliente, senha,  historico, numero: int,  agencia = '00055', saldo = 0):
+    def __init__(self, cliente, senha: int, numero: int,  agencia = '00055', saldo = 0):
         self.__numero = numero
         self.__agencia = agencia
         self.__saldo = saldo
         self.__cliente = cliente #recebe a classe Cliente
-        self.__historico = historico #recebe a classe Historico
+        self.__historico = Historico() #recebe a classe Historico
         self.__senha = senha
  
     def __exibir_saldo(self):
@@ -72,8 +72,8 @@ class Conta:
 class Conta_Corrente(Conta):
     def __init__(self, limite = 15.000, limite_saque = 3, **kwargs):
         super().__init__(**kwargs)
-        self.limite = limite
-        self.limite_de_saque = limite_saque
+        self.__limite = limite
+        self.__limite_de_saque = limite_saque
  
     def __sacar(self, valor: float) -> bool:
         match len(self.__historico.registros):
@@ -93,8 +93,8 @@ class Conta_Corrente(Conta):
 
  
     @classmethod
-    def gerar_conta(cls, numero: int, cliente):
-        return cls(numero, cliente)
+    def gerar_conta(cls, **kwargs):
+        return cls(**kwargs)
     
 # =-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-=
  
