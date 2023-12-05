@@ -16,13 +16,27 @@ class Pessoa_Fisica:
         self.__nome = nome
         self.__cpf = cpf
         self.__data_nascimento = dt_nascimento
- 
- 
+
+    def __str__(self):
+        return f'Class: {self.__class__.__name__} / Att: {"".join([f"{key} : {value} " for key,value in self.__dict__.items()])}'
+
+    @property
+    def nome(self):
+        return self.__nome
+
+
 class Pessoa_Juridica:
     def __init__(self, nome: str, cnpj: int, dt_nascimento: str ):
         self.__nome = nome
         self.__cnpj = cnpj
         self.__data_nascimento = dt_nascimento
+
+    def __str__(self):
+        return f'Class: {self.__class__.__name__} / Att: {"".join([f"{key} : {value} " for key,value in self.__dict__.items()])}'
+
+    @property
+    def nome(self):
+        return self.__nome
  
 # =-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-=
  
@@ -31,7 +45,14 @@ class Cliente:
         self.__endereco = endereco
         self.__contas = list()
         self.__classificacao = '' # vai receber as classes pessoa fisica ou juridica
-    
+
+    def __str__(self):
+        return f'Class: {__class__.__name__} / Att: {"".join([f"{key} : {value} " for key, value in self.__dict__.items()])}'
+
+    @property
+    def contas(self):
+        return self.__contas
+
     @property
     def classificacao(self):
         return self.__classificacao
@@ -64,16 +85,23 @@ class Conta:
         self.__cliente = cliente #recebe a classe Cliente
         self.__historico = Historico() #recebe a classe Historico
         self.__senha = senha
- 
+
+    @property
+    def numero(self):
+        return self.__numero
+
     def __exibir_saldo(self):
-        return self.saldo
- 
+        return self.__saldo
+
 # =-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-=
 class Conta_Corrente(Conta):
-    def __init__(self, limite = 15.000, limite_saque = 3, **kwargs):
+    def __init__(self, limite = 15000.0, limite_saque = 3, **kwargs):
         super().__init__(**kwargs)
         self.__limite = limite
         self.__limite_de_saque = limite_saque
+
+    def __str__(self):
+        return f'Class: {self.__class__.__name__} / Att: {"".join([f"{key} : {value} " for key,value in self.__dict__.items()])}'
  
     def __sacar(self, valor: float) -> bool:
         match len(self.__historico.registros):
@@ -83,6 +111,9 @@ class Conta_Corrente(Conta):
                 if valor <= self.__saldo and valor != 0:
                     self.__saldo -= valor
                     self.__historico.adicionar_transacao(Transacao_Bancaria.saque(valor))
+
+    def __ver_saldo(self):
+        return self.__saldo
 
  
     def __depositar(self, valor: float) -> bool:
