@@ -9,16 +9,62 @@ from random import randint
 clientes = []
 
 class Janela_Ver_Saldo:
-    def __init__(self):
+    def iniciar_consulta(self):
         self.janela_vs = ctk.CTkToplevel()
         self.janela_vs.geometry("700x720+500+100")
         self.janela_vs.title('BRASBANK - Consulta de Saldo !')
         self.janela_vs.resizable(False, False)
-        self.janela_vs.widgets()
+        self.widgets_consulta()
+        self.janela_vs.focus_force()
+        self.janela_vs.grab_set()
         self.janela_vs.mainloop()
 
-    def widgets(self):
-        pass
+    def widgets_consulta(self):
+
+        # =-=-=-=-==-=-=-= Criando Painéis =-=-====-=-=-=-=-=-=-==-=-=-=
+        self.nome_painel_c = ctk.CTkFrame(master=self.janela_vs, width=68, height=28, fg_color='#708090')
+        self.num_da_conta_c = ctk.CTkFrame(master=self.janela_vs, width=68, height=28, fg_color='#708090')
+        self.senha_c = ctk.CTkFrame(master=self.janela_vs, width=68, height=28, fg_color='#708090')
+
+
+        self.nome_texto_c = ctk.CTkLabel(master=self.janela_vs, text='Nome', font=('Impact', 14), bg_color='#708090',
+                                          text_color='white')
+        self.num_da_conta_texto_c = ctk.CTkLabel(master=self.janela_vs, text='Núm Da Conta', font=('Impact', 14), bg_color='#708090',
+                                          text_color='white')
+        self.senha_texto_c = ctk.CTkLabel(master=self.janela_vs, text='Senha', font=('Impact', 14), bg_color='#708090',
+                                          text_color='white')
+
+        # =-=-=-=-==-=-=-= Places =-=-====-=-=-=-=-=-=-==-=-=-=
+
+
+
+        #-=-=-=-=-=-= Criando os Widgets para consulta =-==-=-=-=-=-==-=
+        self.nome_consulta = ctk.CTkEntry(master=self.janela_vs)
+        self.numero_da_conta_consulta =ctk.CTkEntry(master=self.janela_vs)
+        self.senha_consulta = ctk.CTkEntry(master=self.janela_vs)
+        self.drop_menu_secao = ctk.CTkOptionMenu(master=self.janela_vs,
+                                           bg_color='#708090',
+                                           values=['Pessoa Física', 'Pessoa Jurídica'])
+        self.botao_consultar = ctk.CTkButton(master=self.janela_vs, text='Ver Saldo!')
+
+        # -=-=-=-=-=-= Places =-==-=-=-=-=-==-=
+        self.nome_consulta.place(x=280, y=230)
+        self.numero_da_conta_consulta.place(x=280, y=310)
+        self.senha_consulta.place(x=280, y=390)
+        self.botao_consultar.place(x=280, y=530)
+
+    def exibir_saldo(self):
+        if not self.nome_consulta.get() or not self.numero_da_conta_consulta.get() or not self.senha_consulta.get():
+            messagebox.showerror("Erro!","Você precisa preencher todos os campos.")
+        else:
+            secao = self.drop_menu_secao.get()
+            match secao:
+                case 'Pessoa Física':
+                    for cliente in clientes:
+                        if self.nome_consulta.get() == cliente.classificacao.nome:
+                            print('Encontrado!')
+
+
 
 
 
@@ -38,7 +84,7 @@ class Formulario_Pesssoa_Juridica:
         self.formulario_pj.focus_force()
         self.formulario_pj.mainloop()
 
-    def realizar_cadastro_pf(self):
+    def realizar_cadastro_pj(self):
         if (not self.nome_entry_pj.get() or not self.cnpj.get() or not self.data_nascimento_pj.get()
                 or not self.endereco_pj.get() or not self.senha_pj.get()):
             tk.messagebox.showerror('Erro!', 'Você precisa preencher todos os dados!')
@@ -48,8 +94,12 @@ class Formulario_Pesssoa_Juridica:
             conta = Conta_Corrente.gerar_conta(numero=randint(1, 10000), senha=self.senha_pj.get(), cliente=cliente)
             cliente.adicionar_conta(conta)
             clientes.append(cliente)
-            print(clientes)
-            tk.messagebox.showinfo("Sucesso", 'Cadastro realizado com sucesso!')
+            # print(cliente)
+            # for cliente in clientes:
+            #     for conta in cliente.contas:
+            #         print(conta.numero)
+            tk.messagebox.showinfo("Sucesso",
+                                   f'Cadastro realizado com sucesso\nAnote o Nº da sua conta: [ {conta.numero} ]')
 
 
 
@@ -98,7 +148,7 @@ class Formulario_Pesssoa_Juridica:
         self.endereco_pj = ctk.CTkEntry(master=self.formulario_pj, width=400)
         self.senha_pj = ctk.CTkEntry(master=self.formulario_pj, width=220)
         self.botao_confirmar_cadastro_pj = ctk.CTkButton(master=self.formulario_pj, text='Cadastrar',
-                                                      command=self.realizar_cadastro_pf)
+                                                      command=self.realizar_cadastro_pj)
 
         # -=-=-=-=-=-=-=-=-= Places -=-=-=-=-=-=-=-=-=
         self.nome_entry_pj.place(x=170, y=160)
@@ -134,7 +184,7 @@ class Formulario_Pessoa_Fisica:
             cliente.adicionar_conta(conta)
             clientes.append(cliente)
             print(clientes)
-            tk.messagebox.showinfo("Sucesso", 'Cadastro realizado com sucesso!')
+            tk.messagebox.showinfo("Sucesso", f'Cadastro realizado com sucesso\nAnote o Nº da sua conta: {conta.numero}!')
 
 
     def formulario_widgets(self):
@@ -245,7 +295,7 @@ class Cadastro_de_Conta:
 
 
 
-class Janela_Principal(Cadastro_de_Conta, Formulario_Pessoa_Fisica):
+class Janela_Principal(Cadastro_de_Conta, Formulario_Pessoa_Fisica, Janela_Ver_Saldo):
     """Classe que origina a janela principal"""
     def __init__(self):
         self.root = ctk.CTk()
@@ -260,7 +310,7 @@ class Janela_Principal(Cadastro_de_Conta, Formulario_Pessoa_Fisica):
         # -=-===-== Criando os Widgets =-=-=-=-=-=
         self.painel1 = tk.Canvas(master=self.root, width=240, height=840, background='#727272', highlightthickness=0)
         self.criar_conta = ctk.CTkButton(master=self.root, text='Criar Conta', width=120, font=('Impact',20),  height=100, bg_color='#727272', command=self.cadastrar)
-        self.ver_saldo = ctk.CTkButton(master=self.root, text='Ver Saldo', font=('Impact',20), width=120, height=100, bg_color='#727272')
+        self.ver_saldo = ctk.CTkButton(master=self.root, text='Ver Saldo', font=('Impact',20), width=120, height=100, bg_color='#727272', command=self.iniciar_consulta)
         self.fazer_deposito = ctk.CTkButton(master=self.root, text='Realizar\nDepósito', font=('Impact',20), width=120, height=100, bg_color='#727272')
         self.fazer_saque = ctk.CTkButton(master=self.root, text='Realizar\nSaque', width=120, font=('Impact',20), height=100, bg_color='#727272')
 
@@ -285,6 +335,5 @@ class Janela_Principal(Cadastro_de_Conta, Formulario_Pessoa_Fisica):
 
 
 janela1 = Janela_Principal()
-
 
 
