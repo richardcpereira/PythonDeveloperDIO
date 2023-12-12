@@ -78,7 +78,7 @@ class Cliente:
 # =-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-=
  
 class Conta:
-    def __init__(self, cliente, senha: int, numero: int,  agencia = '00055', saldo = 0):
+    def __init__(self, cliente, senha: int, numero: int,  agencia ='00055', saldo=0):
         self.__numero = numero
         self.__agencia = agencia
         self.__saldo = saldo
@@ -87,42 +87,80 @@ class Conta:
         self.__senha = senha
 
     @property
+    def saldo(self):
+        return self.__saldo
+
+    @property
     def numero(self):
         return self.__numero
 
-    def __exibir_saldo(self):
+    @property
+    def senha(self):
+        return self.__senha
+
+    def exibe_saldo_tela(self):
+        saldo = self.__ver_saldo()
+        return saldo
+
+    def __ver_saldo(self):
         return self.__saldo
+
+    def realizar_deposito(self, dados_digitados_validos, valor):
+        match dados_digitados_validos:
+            case True:
+                self.__depositar(valor)
+            case False:
+                pass
+
+    def realizar_saque(self, dados_digitados_validos, valor):
+        match dados_digitados_validos:
+            case True:
+                self.__sacar(valor)
+            case False:
+                pass
+
+
+    def __depositar(self, valor: float) -> bool:
+        total = self.__saldo + valor
+        if total < self._limite and valor != 0 or total == self._limite and valor != 0:
+            self.__saldo += valor
+            self.__historico.adicionar_transacao(Transacao_Bancaria.deposito(valor))
+            print(self.__historico.registros)
+
+
+    def __sacar(self, valor: float) -> bool:
+        if valor <= self.__saldo and valor != 0:
+            self.__saldo -= valor
+            self.__historico.adicionar_transacao(Transacao_Bancaria.saque(valor))
+
+
+
+
+
 
 # =-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-=
 class Conta_Corrente(Conta):
     def __init__(self, limite = 15000.0, limite_saque = 3, **kwargs):
         super().__init__(**kwargs)
-        self.__limite = limite
-        self.__limite_de_saque = limite_saque
+        self._limite = limite
+        self._limite_de_saque = limite_saque
+        self._saques_realizados = 0
 
     def __str__(self):
         return f'Class: {self.__class__.__name__} / Att: {"".join([f"{key} : {value} " for key,value in self.__dict__.items()])}'
- 
-    def __sacar(self, valor: float) -> bool:
-        match len(self.__historico.registros):
-            case self.limite_de_saque:
-                print('Você já atingiu o limite de saques diários!')
-            case _:
-                if valor <= self.__saldo and valor != 0:
-                    self.__saldo -= valor
-                    self.__historico.adicionar_transacao(Transacao_Bancaria.saque(valor))
 
-    def __ver_saldo(self):
-        return self.__saldo
+    @property
+    def limite_de_saque(self):
+        return self._limite_de_saque
 
- 
-    def __depositar(self, valor: float) -> bool:
-        total = self.__saldo + valor
-        if total < self.limite  and valor != 0 or total == self.limite and valor !=0:
-            self.__saldo += valor
-            self.__historico.adicionar_transacao(Transacao_Bancaria.deposito(valor))
+    @property
+    def saques_realizados(self):
+        return self._saques_realizados
 
- 
+    @saques_realizados.setter
+    def saques_realizados(self, valor):
+        self._saques_realizados += valor
+
     @classmethod
     def gerar_conta(cls, **kwargs):
         return cls(**kwargs)
@@ -130,17 +168,20 @@ class Conta_Corrente(Conta):
 # =-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-=
  
 class Transacao_Bancaria(Transacao):
-    def __init__(self):
-        self.transacao = {}
+    def __init__(self, transacao_realizada):
+        self.transacao_realizada = transacao_realizada
+
+    @classmethod
+    def deposito(cls, valor):
+        return cls({'Tipo de Transação': 'Depósito', 'Valor Depositado': f'R$ {valor}', 'Data da Transação':
+            '{datetime.datetime.now().strftime("Data: %d/%m/%Y | Hora: %H:%M")}'})
     
-    def deposito(self, valor):
-        self.transacao.setdefault({'Tipo de Transação': 'Depósito', 'Valor Depositado': f'R$ {valor}', 'Data da Transação': '{datetime.datetime.now().strftime("Data: %d/%m/%Y | Hora: %H:%M")}'})
-    
- 
-    def saque(self, valor):
-        self.transacao.setdefault({'Tipo de Transação': 'Saque', 'Valor do Saque': f'R$ {valor}', 'Data da Transação': '{datetime.datetime.now().strftime("Data: %d/%m/%Y | Hora: %H:%M")}'})
-        
- 
+    @classmethod
+    def saque(cls, valor):
+        return cls({'Tipo de Transação': 'Saque', 'Valor do Saque': f'R$ {valor}',
+                                   'Data da Transação':
+                                       '{datetime.datetime.now().strftime("Data: %d/%m/%Y | Hora: %H:%M")}'})
+
  
 class Historico:
     def __init__(self):
@@ -148,3 +189,4 @@ class Historico:
     
     def adicionar_transacao(self, transacao):
         self.registros.append(transacao)
+
