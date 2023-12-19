@@ -6,9 +6,14 @@ from b64imagens import *
 from tkinter import messagebox
 from random import randint
 
-clientes = []
+clientes_pf = list()
+clientes_pj = list()
 
 class Janela_Saque:
+    """
+    Classe que contém toda a estrutura para realizar o procedimento de Saque!
+    Contém, botões, entrys, e funcções de validação.
+    """
     def sacar(self):
         self.janela_sacar = ctk.CTkToplevel()
         self.janela_sacar.title('BRASBANK - Janela Saque')
@@ -52,79 +57,133 @@ class Janela_Saque:
         self.valor_texto_saque = ctk.CTkLabel(master=self.janela_sacar, text='Valor R$', bg_color='#708090',
                                                  font=('Impact', 14), text_color='#E0FFFF')
 
+        # =-=-=-=-=-=-=-=-= Places ==-=-=-=-=-=-=-=-=-=-=-=-
         self.painel_nome_saque.place(x=200, y=200)
-        self.painel_conta_saque.place(x=200, y=300)
-        self.painel_senha_saque.place(x=200, y=400)
-        self.painel_valor_saque.place(x=200, y=500)
+        self.painel_conta_saque.place(x=200, y=280)
+        self.painel_senha_saque.place(x=200, y=360)
+        self.painel_valor_saque.place(x=200, y=440)
 
         self.nome_texto_saque.place(x=220, y=200)
-        self.conta_texto_saque.place(x=220, y=300)
-        self.senha_texto_saque.place(x=220, y=400)
-        self.valor_texto_saque.place(x=220, y=500)
+        self.conta_texto_saque.place(x=220, y=280)
+        self.senha_texto_saque.place(x=220, y=360)
+        self.valor_texto_saque.place(x=220, y=440)
 
         # =-=-=-=-=-=-=-=-= Criando Widgets para Depósito ==-=-=-=-=-=-=-=-=-=-=-=-
         self.nome_saque_entry = ctk.CTkEntry(master=self.janela_sacar, width=300, bg_color="#8FBC8F")
         self.conta_saque_entry = ctk.CTkEntry(master=self.janela_sacar, width=300, bg_color="#8FBC8F")
         self.senha_saque_entry = ctk.CTkEntry(master=self.janela_sacar, width=300, bg_color="#8FBC8F")
         self.valor_saque_entry = ctk.CTkEntry(master=self.janela_sacar, width=300, bg_color="#8FBC8F")
+        self.check_box_PessoaFisica = ctk.CTkCheckBox(master=self.janela_sacar, text='Pessoa Física',
+                                                      bg_color="#8FBC8F")
+        self.check_box_PessoaJuridica = ctk.CTkCheckBox(master=self.janela_sacar, text='Pessoa Jurídica',
+                                                        bg_color="#8FBC8F")
         self.botão_saque = ctk.CTkButton(master=self.janela_sacar, text='Realizar Saque',
                                                      bg_color="#8FBC8F", command=self.realizar_saque)
 
         # =-=-=-=-=-=-=-=-= Widgets Places ==-=-=-=-=-=-=-=-=-=-=-=-
         self.nome_saque_entry.place(x=280, y=200)
-        self.conta_saque_entry.place(x=280, y=300)
-        self.senha_saque_entry.place(x=280, y=400)
-        self.valor_saque_entry.place(x=280, y=500)
+        self.conta_saque_entry.place(x=280, y=280)
+        self.senha_saque_entry.place(x=280, y=360)
+        self.valor_saque_entry.place(x=280, y=440)
+        self.check_box_PessoaFisica.place(x=200, y=520)
+        self.check_box_PessoaJuridica.place(x=460, y=520)
         self.botão_saque.place(x=290, y=580)
 
+    def verificar_checkbox(self) -> str:
+        """Função responsável por validar o resultado dos checkboxes"""
+        try:
+            pf_valor: int = self.check_box_PessoaFisica.get()
+            pj_valor: int = self.check_box_PessoaJuridica.get()
+
+            if pf_valor == 0 and pj_valor == 0:
+                raise ValueError('Você não marcou uma das opções: Pessoa Física ou Jurídica.')
+            elif pf_valor == 1 and pj_valor == 1:
+                raise ValueError('Você selecionou as duas opções (Pessoa Física e Jurídica). '
+                                 'Favor, escolher somente uma!')
+        except ValueError as erro:
+            messagebox.showerror('FALHA NA OPERAÇÃO!', f'{erro}')
+            return 'Inválido'
+        else:
+            match pf_valor:
+                case 1:
+                    return 'Pessoa Física'
+
+            match pj_valor:
+                case 1:
+                    return 'Pessoa Jurídica'
+
     def realizar_saque(self):
-        if not self.nome_saque_entry.get() or not self.conta_saque_entry.get() or not self.senha_saque_entry.get() or not self.valor_saque_entry.get():
+        check_box_resultado: str = self.verificar_checkbox()
+        bd_cliente_localizado : int = ''
+        bd_conta_localizada: int = ''
+        conta_saque = ''
+
+        if (not self.nome_saque_entry.get() or not self.conta_saque_entry.get() or not self.senha_saque_entry.get()
+                or not self.valor_saque_entry.get()):
             messagebox.showerror('ERRO!', "Você precisa preencher todos os dados!")
         else:
-            conta_localizada = ''
-            ultrapassou_limite_de_saques = False
-            for cliente in clientes:
-                if self.nome_saque_entry.get() == cliente.classificacao.nome:
-                    for conta in cliente.contas:
-                        # if conta.saldo == 0:
-                        #     messagebox.showerror("OPERAÇÃO CANCELADA!",
-                        #                          'Desculpe, saldo insuficiente!')
+            check_box_valido = False
+            match check_box_resultado:
+                case 'Inválido':
+                    pass
+                case 'Pessoa Física':
+                    try:
+                        for cliente in clientes_pf:
+                            if self.nome_saque_entry.get() == cliente.classificacao.nome:
+                                bd_cliente_localizado = clientes_pf.index(cliente)
+
+                        for conta in clientes_pf[bd_cliente_localizado].contas:
+                            if (int(self.conta_saque_entry.get()) == conta.numero
+                                    and self.senha_saque_entry.get() == conta.senha):
+                                bd_conta_localizada = clientes_pf[bd_cliente_localizado].contas.index(conta)
+
+                        conta_saque = clientes_pf[bd_cliente_localizado].contas[bd_conta_localizada]
+                        check_box_valido = True
+                    except Exception:
+                        pass
+
+                case 'Pessoa Jurídica':
+                    try:
+                        for cliente in clientes_pj:
+                            if self.nome_saque_entry.get() == cliente.classificacao.nome:
+                                bd_cliente_localizado = clientes_pj.index(cliente)
+
+                        for conta in clientes_pj[bd_cliente_localizado].contas:
+                            if int(self.conta_saque_entry.get()) == conta.numero and self.senha_saque_entry.get() == conta.senha:
+                                bd_conta_localizada = clientes_pj[bd_cliente_localizado].contas.index(conta)
+                        conta_saque = clientes_pj[bd_cliente_localizado].contas[bd_conta_localizada]
+                        check_box_valido = True
+                    except Exception:
+                        pass
 
 
-                        if int(self.conta_saque_entry.get()) == conta.numero and self.senha_saque_entry.get() == conta.senha and conta.saques_realizados <= conta.limite_de_saque:
-                            conta_localizada = cliente.contas.index(conta)
-                            print(conta_localizada)
-                            break
+            if check_box_valido:
+                # usar a conta = clientes[cliente_localizado].contas[conta_localizada].saques_realizados
 
-                        elif conta.saques_realizados > conta.limite_de_saque:
-                            ultrapassou_limite_de_saques = True
-
-                if not ultrapassou_limite_de_saques:
-                    match cliente.contas[conta_localizada].saldo:
-                        case 0:
-                            messagebox.showerror("OPERAÇÃO CANCELADA!",
-                                                                  'Desculpe, saldo insuficiente!')
-                            self.janela_sacar.destroy()
-                        case _:
-                            print(conta_localizada)
-                            valor_saque = float(self.valor_saque_entry.get())
-                            cliente.contas[conta_localizada].realizar_saque(True, valor_saque)
-                            print(cliente.contas[conta_localizada].exibe_saldo_tela())
-                            cliente.contas[conta_localizada].saques_realizados += 1
-                            messagebox.showinfo('Sucesso!', f'O Saque no valor de R$ {valor_saque}'
-                                                            f' foi Realizado com Sucesso na conta '
-                                                            f'{cliente.contas[conta_localizada].numero}!')
-                            self.janela_sacar.destroy()
-                else:
+                if conta_saque.saldo == 0:
+                    messagebox.showerror('OPERAÇÃO CANCELADA!', 'VOCÊ NÃO POSSUI SALDO SUFICIENTE!')
+                elif conta_saque.saques_realizados == conta_saque.limite_de_saque:
                     messagebox.showerror("OPERAÇÃO CANCELADA!",
-                                         'Desculpe, você ultrapassou o limite de saques diários!')
-                    ultrapassou_limite_de_saques = False
-                    self.janela_sacar.destroy()
+                                         "VOCÊ ATINGIU O LIMITE DE SAQUES DIÁRIOS PARA ESTA CONTA!")
+                else:
+                    valor_do_saque = float(self.valor_saque_entry.get())
+                    conta_saque.realizar_saque(True, valor_do_saque)
+                    conta_saque.contabilizar_saque()
+                    messagebox.showinfo("SUCESSO!",
+                                        f"Saque realizado com SUCESSO na conta: {conta_saque.numero}\n"
+                                                    f"Saldo atual: R$ {conta_saque.saldo}\n"
+                                                    f"Saques Restantes: "
+                                                    f"{conta_saque.limite_de_saque - conta_saque.saques_realizados}")
 
+                    #=-=-=-=-= Prints para verificação de informação =-=-=-=-=-
 
+                    for transacoes in conta_saque.historico.registros:
+                        print(transacoes)
+                    print(f'Total de transacoes realizadas {len(conta_saque.historico.registros)}')
 
+                    # =-=-=-=-= Prints para verificação de informação =-=-=-=-=-
 
-
+            """REFATORAR SAQUE E DEPÓSITO COM OS BANCOS DE DADOS PF E PJ"""
 
 class Janela_Deposito:
     def depositar(self):
@@ -169,49 +228,150 @@ class Janela_Deposito:
         self.valor_texto_deposito = ctk.CTkLabel(master=self.janela_depositar, text='Valor R$', bg_color='#708090',
                                                  font=('Impact', 14), text_color='#E0FFFF')
 
-
+        # =-=-=-=-=-=-=-=-= Places ==-=-=-=-=-=-=-=-=-=-=-=-
         self.painel_nome_deposito.place(x=200, y=200)
-        self.painel_conta_deposito.place(x=200, y=300)
-        self.painel_senha_deposito.place(x=200, y=400)
-        self.painel_valor_deposito.place(x=200, y=500)
+        self.painel_conta_deposito.place(x=200, y=280)
+        self.painel_senha_deposito.place(x=200, y=360)
+        self.painel_valor_deposito.place(x=200, y=440)
 
         self.nome_texto_deposito.place(x=220, y=200)
-        self.conta_texto_deposito.place(x=220, y=300)
-        self.senha_texto_deposito.place(x=220, y=400)
-        self.valor_texto_deposito.place(x=220, y=500)
-
+        self.conta_texto_deposito.place(x=220, y=280)
+        self.senha_texto_deposito.place(x=220, y=360)
+        self.valor_texto_deposito.place(x=220, y=440)
 
         # =-=-=-=-=-=-=-=-= Criando Widgets para Depósito ==-=-=-=-=-=-=-=-=-=-=-=-
         self.nome_deposito_entry = ctk.CTkEntry(master=self.janela_depositar, width=300, bg_color="#8FBC8F")
         self.conta_deposito_entry = ctk.CTkEntry(master=self.janela_depositar, width=300, bg_color="#8FBC8F")
         self.senha_deposito_entry = ctk.CTkEntry(master=self.janela_depositar, width=300, bg_color="#8FBC8F")
         self.valor_deposito_entry = ctk.CTkEntry(master=self.janela_depositar, width=300, bg_color="#8FBC8F")
+        self.check_box_PessoaFisica_Deposito = ctk.CTkCheckBox(master=self.janela_depositar, text='Pessoa Física',
+                                                               bg_color="#8FBC8F")
+        self.check_box_PessoaJuridica_Deposito = ctk.CTkCheckBox(master=self.janela_depositar, text='Pessoa Jurídica',
+                                                                 bg_color="#8FBC8F")
         self.botão_realizar_deposito = ctk.CTkButton(master=self.janela_depositar, text='Realizar Depósito',
                                                      bg_color="#8FBC8F", command=self.realizar_deposito_bancario)
 
+
         # =-=-=-=-=-=-=-=-= Widgets Places ==-=-=-=-=-=-=-=-=-=-=-=-
         self.nome_deposito_entry.place(x=280, y=200)
-        self.conta_deposito_entry.place(x=280, y=300)
-        self.senha_deposito_entry.place(x=280, y=400)
-        self.valor_deposito_entry.place(x=280, y=500)
+        self.conta_deposito_entry.place(x=280, y=280)
+        self.senha_deposito_entry.place(x=280, y=360)
+        self.valor_deposito_entry.place(x=280, y=440)
+        self.check_box_PessoaFisica_Deposito.place(x=200, y=520)
+        self.check_box_PessoaJuridica_Deposito.place(x=460, y=520)
         self.botão_realizar_deposito.place(x=290, y=580)
 
+    def valida_checkbox_deposito(self) -> str:
+        """Classe responsável por validar o resultado das checkboxes"""
+        try:
+            pf_valor_Deposito: int = self.check_box_PessoaFisica_Deposito.get()
+            pjvalor_Deposito: int = self.check_box_PessoaJuridica_Deposito.get()
+
+            if pf_valor_Deposito == 0 and pjvalor_Deposito == 0:
+                raise ValueError('Você não marcou uma das opções: Pessoa Física ou Jurídica.')
+            elif pf_valor_Deposito == 1 and pjvalor_Deposito == 1:
+                raise ValueError(
+                    'Você selecinou as duas opções (Pessoa Física e Jurídica). Favor, escolher somente uma!')
+        except ValueError as erro:
+            messagebox.showerror('FALHA NA OPERAÇÃO!', f'{erro}')
+            return 'Inválido'
+        else:
+            match pf_valor_Deposito:
+                case 1:
+                    return 'Pessoa Física'
+
+            match pjvalor_Deposito:
+                case 1:
+                    return 'Pessoa Jurídica'
+
     def realizar_deposito_bancario(self):
-        if not self.nome_deposito_entry.get() or not self.conta_deposito_entry.get() or not self.senha_deposito_entry.get() or not self.valor_deposito_entry.get():
+        if (not self.nome_deposito_entry.get() or not self.conta_deposito_entry.get()
+                or not self.senha_deposito_entry.get() or not self.valor_deposito_entry.get()):
             messagebox.showerror('ERRO!', "Você precisa preencher todos os dados!")
         else:
-            for cliente in clientes:
-                if self.nome_deposito_entry.get() == cliente.classificacao.nome:
-                    for conta in cliente.contas:
-                        if int(self.conta_deposito_entry.get()) == conta.numero and self.senha_deposito_entry.get() == conta.senha:
+            check_box_deposito_resultado: str = self.valida_checkbox_deposito()
+            cliente_deposito_localizado: int = ''
+            conta_deposito_localizada: int = ''
+
+            match check_box_deposito_resultado:
+                case 'Inválido':
+                    pass
+                case 'Pessoa Física':
+                    try:
+                        for cliente in clientes_pf:
+                            if self.nome_deposito_entry.get() == cliente.classificacao.nome:
+                                cliente_deposito_localizado = clientes_pf.index(cliente)
+
+                        if cliente_deposito_localizado == '':
+                            raise ValueError('Cliente não localizado!')
+                    except ValueError as erro:
+                        messagebox.showerror('ERRO!', f'{erro}')
+                        pass
+                    else:
+                        try:
+                            for conta in clientes_pf[cliente_deposito_localizado].contas:
+                                if (int(self.conta_deposito_entry.get()) == conta.numero
+                                        and self.senha_deposito_entry.get() == conta.senha):
+                                    conta_deposito_localizada = clientes_pf[cliente_deposito_localizado].contas.index(conta)
+                            if conta_deposito_localizada == '':
+                                raise ValueError('Cliente não localizado!')
+                        except ValueError as erro:
+                            messagebox.showerror('ERRO!', f'{erro}')
+                            pass
+                        else:
+                            conta_utilizada_dep = clientes_pf[cliente_deposito_localizado].contas[conta_deposito_localizada]
                             valor_deposito = float(self.valor_deposito_entry.get())
-                            conta.realizar_deposito(True, valor_deposito)
-                            print(conta.exibe_saldo_tela())
+                            conta_utilizada_dep.realizar_deposito(True, valor_deposito)
+                            print(conta_utilizada_dep.exibe_saldo_tela())
+                            messagebox.showinfo('Sucesso!', f'O Depósito no valor de R$ {valor_deposito}'
+                                                            f' foi Realizado com Sucesso!')
+
+                            # =-=-=-=-= Prints para verificação de informação =-=-=-=-=-
+
+                            for transacoes in conta_utilizada_dep.historico.registros:
+                                print(transacoes)
+                            print(f'Total de transacoes realizadas {len(conta_utilizada_dep.historico.registros)}')
+
+                            # =-=-=-=-= Prints para verificação de informação =-=-=-=-=-
+
+                case 'Pessoa Jurídica':
+                    try:
+                        for cliente in clientes_pj:
+                            if self.nome_deposito_entry.get() == cliente.classificacao.nome:
+                                cliente_deposito_localizado = clientes_pj.index(cliente)
+                        if cliente_deposito_localizado == '':
+                            raise ValueError('Cliente não localizado!')
+                    except ValueError as erro:
+                        messagebox.showerror('ERRO!', f'{erro}')
+                        pass
+
+                    else:
+                        try:
+                            for conta in clientes_pj[cliente_deposito_localizado].contas:
+                                if (int(self.conta_deposito_entry.get()) == conta.numero
+                                        and self.senha_deposito_entry.get() == conta.senha):
+                                    conta_deposito_localizada = clientes_pj[cliente_deposito_localizado].contas.index(conta)
+                            if conta_deposito_localizada == '':
+                                raise ValueError('Cliente não localizado!')
+                        except ValueError as erro:
+                            messagebox.showerror('ERRO!', f'{erro}')
+                            pass
+                        else:
+                            conta_utilizada_dep = clientes_pj[cliente_deposito_localizado].contas[conta_deposito_localizada]
+                            valor_deposito = float(self.valor_deposito_entry.get())
+                            conta_utilizada_dep.realizar_deposito(True, valor_deposito)
+                            print(conta_utilizada_dep.exibe_saldo_tela())
                             messagebox.showinfo('Sucesso!', f'O Depósito no valor de R$ {valor_deposito}'
                                                             f' foi Realizado com Sucesso!')
 
 
+                            # =-=-=-=-= Prints para verificação de informação =-=-=-=-=-
 
+                            for transacoes in conta_utilizada_dep.historico.registros:
+                                print(transacoes)
+                            print(f'Total de transacoes realizadas {len(conta_utilizada_dep.historico.registros)}')
+
+                            # =-=-=-=-= Prints para verificação de informação =-=-=-=-=-
 
 class Janela_Ver_Saldo:
     def iniciar_consulta(self):
@@ -296,27 +456,80 @@ class Janela_Ver_Saldo:
         if not self.nome_consulta.get() or not self.numero_da_conta_consulta.get() or not self.senha_consulta.get():
             messagebox.showerror("Erro!","Você precisa preencher todos os campos.")
         else:
-            secao = self.drop_menu_secao.get()
+            print(clientes_pf)
+            print(clientes_pj)
+            dados_validos = True
+            secao: str = self.drop_menu_secao.get()
+
+            cliente_localizado: int = ''
+            conta_localizada: int = ''
+
             match secao:
                 case 'Pessoa Física':
-                    for cliente in clientes:
-                        if self.nome_consulta.get() == cliente.classificacao.nome and cliente.classificacao.__class__.__name__ == 'Pessoa_Fisica':
-                            for conta in cliente.contas:
-                                if int(self.numero_da_conta_consulta.get()) == conta.numero and self.senha_consulta.get() == conta.senha:
-                                    saldo = str(conta.exibe_saldo_tela())
-                                    self.tela_saldo(saldo)
-                                else:
-                                    print("ERRO")
-                case 'Pessoa Jurídica':
-                    for cliente in clientes:
-                        if self.nome_consulta.get() == cliente.classificacao.nome and cliente.classificacao.__class__.__name__ == 'Pessoa_Juridica':
-                            for conta in cliente.contas:
-                                if int(self.numero_da_conta_consulta.get()) == conta.numero and self.senha_consulta.get() == conta.senha:
-                                    saldo = str(conta.exibe_saldo_tela())
-                                    self.tela_saldo(saldo)
-                                else:
-                                    print("ERRO")
+                    try:
+                        for cliente in clientes_pf:
+                            if self.nome_consulta.get() == cliente.classificacao.nome:
+                                cliente_localizado = clientes_pf.index(cliente)
+                                print(cliente_localizado)
+                                break
+                        if cliente_localizado == '':
+                            raise ValueError('Cliente não Localizado!')
 
+                    except ValueError as erro:
+                        messagebox.showerror("ERRO!", f'{erro}')
+                        dados_validos = False
+                    else:
+                        try:
+                            for conta in clientes_pf[cliente_localizado].contas:
+                                if (int(self.numero_da_conta_consulta.get()) == conta.numero
+                                        and self.senha_consulta.get() == conta.senha):
+                                    conta_localizada = clientes_pf[cliente_localizado].contas.index(conta)
+                                    print(conta_localizada)
+                                    break
+                            if conta_localizada == '':
+                                raise ValueError('Cliente não localizado!')
+                        except ValueError as erro:
+                            messagebox.showerror("ERRO", f'{erro}')
+                            dados_validos = False
+
+                case 'Pessoa Jurídica':
+                    try:
+                        for cliente in clientes_pj:
+                            if (self.nome_consulta.get() == cliente.classificacao.nome
+                                    and cliente.classificacao.__class__.__name__ == 'Pessoa_Juridica'):
+                                cliente_localizado = clientes_pj.index(cliente)
+                        if cliente_localizado == '':
+                            raise ValueError('Cliente não localizado!')
+
+                    except ValueError as erro:
+                        messagebox.showerror("ERRO", f'{erro}')
+                        dados_validos = False
+                    else:
+                        try:
+                            for conta in clientes_pj[cliente_localizado].contas:
+                                if (int(self.numero_da_conta_consulta.get()) == conta.numero
+                                        and self.senha_consulta.get() == conta.senha):
+                                    conta_localizada = clientes_pj[cliente_localizado].contas.index(conta)
+                            if conta_localizada == '':
+                                raise ValueError('Cliente não localizado!')
+
+                        except ValueError as erro:
+                            messagebox.showerror("ERRO", f'{erro}')
+                            dados_validos = False
+
+            match dados_validos:
+                case True:
+                    if secao == 'Pessoa Física':
+                        conta_utilizada = clientes_pf[cliente_localizado].contas[conta_localizada]
+                        saldo = str(conta_utilizada.exibe_saldo_tela())
+                        self.tela_saldo(saldo)
+                    elif secao == 'Pessoa Jurídica':
+                        conta_utilizada = clientes_pj[cliente_localizado].contas[conta_localizada]
+                        saldo = str(conta_utilizada.exibe_saldo_tela())
+                        self.tela_saldo(saldo)
+                case False:
+                    messagebox.showerror('ERRO', 'Conta não localizada!\n'
+                                                 'Verifique os dados e tente novamente')
 
 
 
@@ -340,7 +553,7 @@ class Formulario_Pesssoa_Juridica:
         else:
             possui_conta_pj = False
 
-            match len(clientes):
+            match len(clientes_pj):
                 case 0:
                     cliente = Cliente(self.endereco_pj.get())
                     cliente.classificacao = Pessoa_Juridica(self.nome_entry_pj.get(), self.cnpj.get(),
@@ -348,12 +561,14 @@ class Formulario_Pesssoa_Juridica:
                     conta = Conta_Corrente.gerar_conta(numero=randint(1, 10000), senha=self.senha_pj.get(),
                                                        cliente=cliente)
                     cliente.adicionar_conta(conta)
-                    clientes.append(cliente)
+                    clientes_pj.append(cliente)
                     self.limpa_entrys_pj()
                     tk.messagebox.showinfo("Sucesso",
                                 f'Cadastro realizado com sucesso\nAnote o Nº da sua conta:  {conta.numero}')
-                case _ as status if status == len(clientes) > 0:
-                    for cliente in clientes:
+                    print(clientes_pj)
+
+                case _ as status if status == len(clientes_pj) > 0:
+                    for cliente in clientes_pj:
                         if cliente.classificacao.nome == self.nome_entry_pj.get():
                             possui_conta_pj = True
                             break
@@ -365,7 +580,7 @@ class Formulario_Pesssoa_Juridica:
                                                                     self.data_nascimento_pj.get())
                             conta = Conta_Corrente.gerar_conta(numero=randint(1, 10000), senha=self.senha_pj.get(),
                                                                cliente=cliente)
-                            for cliente in clientes:
+                            for cliente in clientes_pj:
                                 if cliente.classificacao.nome == self.nome_entry_pj.get():
                                     cliente.adicionar_conta(conta)
                                     print(f'Contas do {cliente.classificacao.nome}: {cliente.contas}')
@@ -374,6 +589,7 @@ class Formulario_Pesssoa_Juridica:
                             self.limpa_entrys_pj()
                             messagebox.showinfo("SUCESSO!", f"{nome.upper()}\nSua nova conta de Nº "
                                                             f"{conta.numero} foi cadastrada com sucesso!")
+                            print(clientes_pj)
 
                         case False:
                             cliente = Cliente(self.endereco_pj.get())
@@ -382,10 +598,11 @@ class Formulario_Pesssoa_Juridica:
                             conta = Conta_Corrente.gerar_conta(numero=randint(1, 10000), senha=self.senha_pj.get(),
                                                                cliente=cliente)
                             cliente.adicionar_conta(conta)
-                            clientes.append(cliente)
+                            clientes_pj.append(cliente)
                             self.limpa_entrys_pj()
                             tk.messagebox.showinfo("Sucesso",
                                 f'Cadastro realizado com sucesso\nAnote o Nº da sua conta:  {conta.numero}')
+                            print(clientes_pj)
 
 
 
@@ -471,19 +688,20 @@ class Formulario_Pessoa_Fisica:
         else:
             # -=-=-=-=-=- Cadastrando Cliente Pessoa Física e Conta Bancária -=-=-=-=-=-
             possui_conta = False
-            match len(clientes):
+            match len(clientes_pf):
                 case 0:
                     cliente = Cliente(self.endereco.get())
                     cliente.classificacao = Pessoa_Fisica(self.nome_entry.get(), self.cpf.get(), self.data_nascimento.get())
                     conta = Conta_Corrente.gerar_conta(numero=randint(1, 10000), senha=self.senha.get(), cliente=cliente)
                     cliente.adicionar_conta(conta)
-                    clientes.append(cliente)
-                    print(clientes)
+                    clientes_pf.append(cliente)
+                    print(clientes_pf)
                     tk.messagebox.showinfo("Sucesso",
                                            f'Cadastro realizado com sucesso\nAnote o Nº da sua conta: {conta.numero}!')
+                    print(clientes_pf)
                     self.limpa_entrys()
-                case _ as status if status == len(clientes) > 0:
-                    for cliente in clientes:
+                case _ as status if status == len(clientes_pf) > 0:
+                    for cliente in clientes_pf:
                         if cliente.classificacao.nome == self.nome_entry.get():
                             possui_conta = True
                             break
@@ -495,7 +713,7 @@ class Formulario_Pessoa_Fisica:
                                                                   self.data_nascimento.get())
                             conta = Conta_Corrente.gerar_conta(numero=randint(1, 10000), senha=self.senha.get(),
                                                                cliente=cliente)
-                            for cliente in clientes:
+                            for cliente in clientes_pf:
                                 if cliente.classificacao.nome == self.nome_entry.get():
                                     cliente.adicionar_conta(conta)
                                     print(f'Contas do {cliente.classificacao.nome}: {cliente.contas}')
@@ -504,6 +722,7 @@ class Formulario_Pessoa_Fisica:
                             self.limpa_entrys()
                             messagebox.showinfo("SUCESSO!", f"{nome.upper()}\nSua nova conta de Nº "
                                                             f"{conta.numero} foi cadastrada com sucesso!")
+                            print(clientes_pf)
 
                         case False:
                             cliente = Cliente(self.endereco.get())
@@ -512,10 +731,10 @@ class Formulario_Pessoa_Fisica:
                             conta = Conta_Corrente.gerar_conta(numero=randint(1, 10000), senha=self.senha.get(),
                                                                cliente=cliente)
                             cliente.adicionar_conta(conta)
-                            clientes.append(cliente)
-                            print(clientes)
+                            clientes_pf.append(cliente)
                             tk.messagebox.showinfo("Sucesso",
                                 f'Cadastro realizado com sucesso\nAnote o Nº da sua conta: {conta.numero}!')
+                            print(clientes_pf)
                             self.limpa_entrys()
 
 
@@ -681,7 +900,5 @@ class Janela_Principal(Cadastro_de_Conta, Formulario_Pessoa_Fisica, Janela_Ver_S
         self.painel1.place(x=0, y=0)
 
 
-janela1 = Janela_Principal()
-
-
-
+if __name__ == '__main__':
+    janela1 = Janela_Principal()

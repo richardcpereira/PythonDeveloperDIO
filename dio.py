@@ -87,6 +87,11 @@ class Conta:
         self.__senha = senha
 
     @property
+    def historico(self):
+        return self.__historico
+
+
+    @property
     def saldo(self):
         return self.__saldo
 
@@ -140,11 +145,12 @@ class Conta:
 
 # =-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-==-=-=-=-=-=
 class Conta_Corrente(Conta):
-    def __init__(self, limite = 15000.0, limite_saque = 3, **kwargs):
+    def __init__(self, limite = 15000.0, **kwargs):
         super().__init__(**kwargs)
         self._limite = limite
-        self._limite_de_saque = limite_saque
+        self._limite_de_saque = 3
         self._saques_realizados = 0
+
 
     def __str__(self):
         return f'Class: {self.__class__.__name__} / Att: {"".join([f"{key} : {value} " for key,value in self.__dict__.items()])}'
@@ -157,9 +163,8 @@ class Conta_Corrente(Conta):
     def saques_realizados(self):
         return self._saques_realizados
 
-    @saques_realizados.setter
-    def saques_realizados(self, valor):
-        self._saques_realizados += valor
+    def contabilizar_saque(self):
+        self._saques_realizados +=1
 
     @classmethod
     def gerar_conta(cls, **kwargs):
@@ -174,13 +179,15 @@ class Transacao_Bancaria(Transacao):
     @classmethod
     def deposito(cls, valor):
         return cls({'Tipo de Transação': 'Depósito', 'Valor Depositado': f'R$ {valor}', 'Data da Transação':
-            '{datetime.datetime.now().strftime("Data: %d/%m/%Y | Hora: %H:%M")}'})
+            f'{datetime.datetime.now().strftime("Data: %d/%m/%Y | Hora: %H:%M")}'})
     
     @classmethod
     def saque(cls, valor):
         return cls({'Tipo de Transação': 'Saque', 'Valor do Saque': f'R$ {valor}',
                                    'Data da Transação':
-                                       '{datetime.datetime.now().strftime("Data: %d/%m/%Y | Hora: %H:%M")}'})
+                                       f'{datetime.datetime.now().strftime("Data: %d/%m/%Y | Hora: %H:%M")}'})
+    def __str__(self):
+        return f'Class: {self.__class__.__name__} / Att: {"".join([f"{key} : {value} " for key,value in self.__dict__.items()])}'
 
  
 class Historico:
