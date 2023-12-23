@@ -6,6 +6,7 @@ from b64imagens import *
 from tkinter import messagebox
 from random import randint
 
+
 clientes_pf = list()
 clientes_pj = list()
 
@@ -456,8 +457,6 @@ class Janela_Ver_Saldo:
         if not self.nome_consulta.get() or not self.numero_da_conta_consulta.get() or not self.senha_consulta.get():
             messagebox.showerror("Erro!","Você precisa preencher todos os campos.")
         else:
-            print(clientes_pf)
-            print(clientes_pj)
             dados_validos = True
             secao: str = self.drop_menu_secao.get()
 
@@ -470,7 +469,7 @@ class Janela_Ver_Saldo:
                         for cliente in clientes_pf:
                             if self.nome_consulta.get() == cliente.classificacao.nome:
                                 cliente_localizado = clientes_pf.index(cliente)
-                                print(cliente_localizado)
+
                                 break
                         if cliente_localizado == '':
                             raise ValueError('Cliente não Localizado!')
@@ -484,7 +483,7 @@ class Janela_Ver_Saldo:
                                 if (int(self.numero_da_conta_consulta.get()) == conta.numero
                                         and self.senha_consulta.get() == conta.senha):
                                     conta_localizada = clientes_pf[cliente_localizado].contas.index(conta)
-                                    print(conta_localizada)
+
                                     break
                             if conta_localizada == '':
                                 raise ValueError('Cliente não localizado!')
@@ -695,7 +694,6 @@ class Formulario_Pessoa_Fisica:
                     conta = Conta_Corrente.gerar_conta(numero=randint(1, 10000), senha=self.senha.get(), cliente=cliente)
                     cliente.adicionar_conta(conta)
                     clientes_pf.append(cliente)
-                    print(clientes_pf)
                     tk.messagebox.showinfo("Sucesso",
                                            f'Cadastro realizado com sucesso\nAnote o Nº da sua conta: {conta.numero}!')
                     print(clientes_pf)
