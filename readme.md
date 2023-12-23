@@ -49,5 +49,5 @@ Para executar o código, é necessário baixar os arquivos no seu computador e a
 * Este projeto realiza ambas as etapas apresentadas para o desafio: Estruturar as Classes para o Sistema conforme solicitado (Obrigatório) e após
 conclusão da primeira etapa, desenvolver o restante do código de modo que o sistema se torne funcional (Opcional).
 
-*Dúvidas, sugestões e etc, entrar em contato patravés das informações encontradas no meu perfil!!
+*Dúvidas, sugestões e etc, entrar em contato através das informações encontradas no meu perfil!!
 
