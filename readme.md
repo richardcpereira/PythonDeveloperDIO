@@ -21,7 +21,7 @@ consulta de saldo com base no modelo abaixo fornecido durante o curso:
 
 <h3 id="ComoExecutar">Como executar</h3>
 
-Para executar o código, é necessário baixar os arquivos no seu computador e abrir com alguma ide de sua preferência.
+Para testar o sistema, é necessário baixar os arquivos no seu computador e executar o arquivo main.py com alguma ide de sua preferência.
 
 <h3 id="Funcionalidades">Funcionalidades</h3>
 
