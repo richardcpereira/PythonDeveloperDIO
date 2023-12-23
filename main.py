@@ -1,4 +1,4 @@
-from dio import *
+from estruturas import *
 import customtkinter as ctk
 import base64
 import tkinter as tk
