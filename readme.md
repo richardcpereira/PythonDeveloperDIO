@@ -49,5 +49,8 @@ Para testar o sistema, é necessário baixar os arquivos no seu computador e exe
 * Este projeto realiza ambas as etapas apresentadas para o desafio: Estruturar as Classes para o Sistema conforme solicitado (Obrigatório) e após
 conclusão da primeira etapa, desenvolver o restante do código de modo que o sistema se torne funcional (Opcional).
 
+<h2 id="autor">Observações Importantes</h2>
+*Foram deixados no código, prints propositais de modo a facilitar a verificação do funcionamento do sistema devido ao fato de que
+a estrutura sugerida pelo intrutor pode parecer um pouco complexa.
 *Dúvidas, sugestões e etc, entrar em contato através das informações encontradas no meu perfil!!
 
