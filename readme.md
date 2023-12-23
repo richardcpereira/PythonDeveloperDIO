@@ -1,4 +1,4 @@
-<h1 align="center">Bootcamp Potência Tech DIO - Desafio de Projeto 02 Banco de Dados com SQL / MySql</h1>
+<h1 align="center"> DIO - Formação Python Developer</h1>
 
 <div align="center">
 <a href="https://www.dio.me/"><img src="https://hermes.digitalinnovation.one/assets/diome/logo-full.svg" align="center" height="120" width="120" ></a> <br>
