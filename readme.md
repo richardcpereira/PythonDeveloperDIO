@@ -30,7 +30,7 @@ Para testar o sistema, é necessário baixar os arquivos no seu computador e exe
 - [✅] Realizar Saques / Depósitos: Permite o usuário a Sacar ou Depositar valores de sua conta bancária.
 
 <h2 id="autor">Autor</h2>
-- Felipe Rodrigues Fonseca
+- Richard Cabral Pereira
 
 <h3 id="ComoExecutar">Alguns Screenshots do Programa (Clique na imagem para ampliar!)</h3>
 <div align="center">
